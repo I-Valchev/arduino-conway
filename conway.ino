@@ -14,6 +14,7 @@ int moveRight();
 int moveLeft();
 int moveUp();
 int moveDown();
+int setCell();
 
 unsigned int isRunning = 0;
 unsigned int currentX = 0;
@@ -52,19 +53,26 @@ void loop() {
       lcd.print("TUES");
     }else{
       //EDIT MODE
+      generatechars();
+      printworld();
+      
       lcd.setCursor(4, 0);
       lcd.print("X:");
       lcd.print(currentX);
       lcd.setCursor(4, 1);
       lcd.print("Y:");
       lcd.print(currentY);
-      if(moveRight())
+      if(setCell()){
+        world[currentX][currentY] = !world[currentX][currentY];
+        generatechars();
+        printworld();
+      }else if(moveRight())
         currentX++;
-      if(moveLeft())
+      else if(moveLeft())
         currentX--;
-      if(moveUp())
+      else if(moveUp())
         currentY--;
-      if(moveDown())
+      else if(moveDown())
         currentY++;
       
     }
@@ -87,20 +95,24 @@ void loop() {
   }
 }
 
-int moveRight(){
-  if(currentX >= 20) return 0;
+int setCell(){
+  return digitalRead(moveRightPin) && digitalRead(moveLeftPin);
+}
 
-  return digitalRead(moveRightPin);
+int moveRight(){
+  if(currentX >= 19) return 0;
+
+  return digitalRead(moveRightPin) && !digitalRead(moveLeftPin);
 }
 
 int moveLeft(){
   if(currentX == 0) return 0;
 
-  return digitalRead(moveLeftPin);
+  return digitalRead(moveLeftPin) && !digitalRead(moveRightPin);
 }
 
 int moveDown(){
-  if(currentY >= 16) return 0;
+  if(currentY >= 15) return 0;
 
   return 0;
 }
