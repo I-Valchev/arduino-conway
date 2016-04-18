@@ -22,6 +22,8 @@ unsigned int currentY = 0;
 int startPin = 8;
 int controlEditPin = 6, moveLeftPin = 6;
 int moveRightPin = 7;
+int moveUpPin = 10;
+int moveDownPin = 13;
 unsigned int currentStartButtonState = 0, currentControlEditButtonState = 0, previousControlEditButtonState = 0;
 const int refreshInterval = 300;
 const int buttonReadInterval = 1000;
@@ -35,6 +37,8 @@ void setup() {
   pinMode(startPin, INPUT);
   pinMode(controlEditPin, INPUT);
   pinMode(moveRightPin, INPUT);
+  pinMode(moveUpPin, INPUT);
+  pinMode(moveDownPin, INPUT);
   Serial.begin(9600);
   initworld();
 }
@@ -114,13 +118,13 @@ int moveLeft(){
 int moveDown(){
   if(currentY >= 15) return 0;
 
-  return 0;
+  return digitalRead(moveDownPin);
 }
 
 int moveUp(){
   if(currentY == 0) return 0;
 
-  return 0;
+  return digitalRead(moveUpPin);
 }
 
 void updateWorld(){
