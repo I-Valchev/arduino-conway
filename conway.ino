@@ -4,8 +4,6 @@ LiquidCrystal lcd(12, 11, 5, 4, 3, 2);
 #define WORLDMAXX 19
 #define WORLDMAXY 15
 byte world[WORLDMAXX+1][WORLDMAXY+1];
-
-int stepcount;
 void initworld();
 void isalive(int x, int y);
 int countneighbor(int x, int y);
@@ -14,10 +12,15 @@ void printworld();
 void updateWorld();
 
 unsigned int isRunning = 0;
+unsigned int currentX = 0;
+unsigned int currentY = 0;
 int startPin = 8;
-unsigned int currentStartButtonState = 0, previousStartButtonState = 0;
+int controlEditPin = 6;
+unsigned int currentStartButtonState = 0, currentControlEditButtonState = 0, previousControlEditButtonState = 0;
 const int refreshInterval = 300;
-unsigned long previousMillis = 0;
+const int buttonReadInterval = 1000;
+unsigned long previousRefreshMillis = 0;
+unsigned long previousButtonReadMillis = 0;
 
 
 void setup() {
@@ -28,6 +31,7 @@ void setup() {
   lcd.setCursor(4, 1);
   lcd.print("TUES");
   pinMode(startPin, INPUT);
+  pinMode(controlEditPin, INPUT);
   Serial.begin(9600);
   initworld();
 }
@@ -36,24 +40,32 @@ void loop() {
 
   unsigned long currentMillis = millis();
 
-  if(currentMillis - previousMillis >= refreshInterval){
-    if(isRunning == 1)
+  if(currentMillis - previousRefreshMillis >= refreshInterval){
+    if(isRunning == 1){
+      //PLAY MODE
       updateWorld();
-    previousMillis = currentMillis;
+      Serial.println("Play mode");
+    }else{
+      //EDIT MODE
+      Serial.println("Edit mode");
+    }
+    previousRefreshMillis = currentMillis;
   }
 
-  currentStartButtonState = digitalRead(startPin);
+  if(currentMillis - previousButtonReadMillis >= buttonReadInterval){
   
-  if(currentStartButtonState == 1 && currentStartButtonState != previousStartButtonState){
-    if(isRunning == 1)
-      isRunning = 0;
-     else
-      isRunning = 1;
-  }
-
-  previousStartButtonState = currentStartButtonState;
+    currentStartButtonState = digitalRead(startPin);
+    currentControlEditButtonState = digitalRead(controlEditPin);
     
-  Serial.println(isRunning);
+    if(currentStartButtonState == 1 && currentControlEditButtonState == 1){
+        if(isRunning == 1)
+          isRunning = 0;
+         else
+          isRunning = 1;
+    }
+
+    previousButtonReadMillis = currentMillis;
+  }
 }
 
 void updateWorld(){
@@ -79,7 +91,6 @@ void initworld() {
       world[i][j] = !random(4);
     }
   }
-  stepcount = 0;
   return;
 }
 
