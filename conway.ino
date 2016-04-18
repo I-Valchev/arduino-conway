@@ -10,12 +10,17 @@ int countneighbor(int x, int y);
 void generatechars();
 void printworld();
 void updateWorld();
+int moveRight();
+int moveLeft();
+int moveUp();
+int moveDown();
 
 unsigned int isRunning = 0;
 unsigned int currentX = 0;
 unsigned int currentY = 0;
 int startPin = 8;
-int controlEditPin = 6;
+int controlEditPin = 6, moveLeftPin = 6;
+int moveRightPin = 7;
 unsigned int currentStartButtonState = 0, currentControlEditButtonState = 0, previousControlEditButtonState = 0;
 const int refreshInterval = 300;
 const int buttonReadInterval = 1000;
@@ -26,12 +31,9 @@ unsigned long previousButtonReadMillis = 0;
 void setup() {
   lcd.begin(8, 2);
   randomSeed(analogRead(0));
-  lcd.setCursor(4, 0);
-  lcd.print(" Ivo");
-  lcd.setCursor(4, 1);
-  lcd.print("TUES");
   pinMode(startPin, INPUT);
   pinMode(controlEditPin, INPUT);
+  pinMode(moveRightPin, INPUT);
   Serial.begin(9600);
   initworld();
 }
@@ -44,10 +46,27 @@ void loop() {
     if(isRunning == 1){
       //PLAY MODE
       updateWorld();
-      Serial.println("Play mode");
+      lcd.setCursor(4, 0);
+      lcd.print(" Ivo");
+      lcd.setCursor(4, 1);
+      lcd.print("TUES");
     }else{
       //EDIT MODE
-      Serial.println("Edit mode");
+      lcd.setCursor(4, 0);
+      lcd.print("X:");
+      lcd.print(currentX);
+      lcd.setCursor(4, 1);
+      lcd.print("Y:");
+      lcd.print(currentY);
+      if(moveRight())
+        currentX++;
+      if(moveLeft())
+        currentX--;
+      if(moveUp())
+        currentY--;
+      if(moveDown())
+        currentY++;
+      
     }
     previousRefreshMillis = currentMillis;
   }
@@ -66,6 +85,30 @@ void loop() {
 
     previousButtonReadMillis = currentMillis;
   }
+}
+
+int moveRight(){
+  if(currentX >= 20) return 0;
+
+  return digitalRead(moveRightPin);
+}
+
+int moveLeft(){
+  if(currentX == 0) return 0;
+
+  return digitalRead(moveLeftPin);
+}
+
+int moveDown(){
+  if(currentY >= 16) return 0;
+
+  return 0;
+}
+
+int moveUp(){
+  if(currentY == 0) return 0;
+
+  return 0;
 }
 
 void updateWorld(){
