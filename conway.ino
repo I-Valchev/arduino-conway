@@ -3,6 +3,8 @@ LiquidCrystal lcd(12, 11, 5, 4, 3, 2);
 
 #define WORLDMAXX 19
 #define WORLDMAXY 15
+#define REFRESH_TIME 50
+#define BUTTON_READ_TIME 30 
 byte world[WORLDMAXX+1][WORLDMAXY+1];
 void initworld();
 void isalive(int x, int y);
@@ -25,10 +27,11 @@ int moveRightPin = 7;
 int moveUpPin = 10;
 int moveDownPin = 13;
 unsigned int currentStartButtonState = 0, currentControlEditButtonState = 0, previousControlEditButtonState = 0;
-const int refreshInterval = 300;
+const int refreshInterval = 10;
 const int buttonReadInterval = 1000;
 unsigned long previousRefreshMillis = 0;
 unsigned long previousButtonReadMillis = 0;
+int stepCounter = 0;
 
 
 void setup() {
@@ -43,21 +46,16 @@ void setup() {
   initworld();
 }
 
-void loop() {
+void playMode(){
+  updateWorld();
+  lcd.setCursor(4, 0);
+  lcd.print(" Ivo");
+  lcd.setCursor(4, 1);
+  lcd.print("TUES");
+}
 
-  unsigned long currentMillis = millis();
-
-  if(currentMillis - previousRefreshMillis >= refreshInterval){
-    if(isRunning == 1){
-      //PLAY MODE
-      updateWorld();
-      lcd.setCursor(4, 0);
-      lcd.print(" Ivo");
-      lcd.setCursor(4, 1);
-      lcd.print("TUES");
-    }else{
-      //EDIT MODE
-      generatechars();
+void editMode(){
+  generatechars();
       printworld();
       
       lcd.setCursor(4, 0);
@@ -78,13 +76,29 @@ void loop() {
         currentY--;
       else if(moveDown())
         currentY++;
-      
-    }
+}
+
+void loop() {
+
+  unsigned long currentMillis = millis();
+
+  if(currentMillis - previousRefreshMillis >= refreshInterval){
+    stepCounter++;
     previousRefreshMillis = currentMillis;
   }
 
-  if(currentMillis - previousButtonReadMillis >= buttonReadInterval){
-  
+  if(stepCounter % REFRESH_TIME == 0)
+  {
+    if(isRunning == 1){
+      //PLAY MODE
+      playMode();
+    }else{
+      //EDIT MODE
+      editMode();
+    }
+  }
+
+  if(stepCounter % BUTTON_READ_TIME == 0){
     currentStartButtonState = digitalRead(startPin);
     currentControlEditButtonState = digitalRead(controlEditPin);
     
@@ -94,9 +108,11 @@ void loop() {
          else
           isRunning = 1;
     }
-
-    previousButtonReadMillis = currentMillis;
   }
+
+  if(stepCounter == BUTTON_READ_TIME * REFRESH_TIME)
+    stepCounter = 0;
+
 }
 
 int setCell(){
