@@ -78,6 +78,18 @@ void editMode(){
         currentY++;
 }
 
+void readButtons(){
+  currentStartButtonState = digitalRead(startPin);
+  currentControlEditButtonState = digitalRead(controlEditPin);
+    
+  if(currentStartButtonState == 1 && currentControlEditButtonState == 1){
+      if(isRunning == 1)
+        isRunning = 0;
+       else
+        isRunning = 1;
+  }
+}
+
 void loop() {
 
   unsigned long currentMillis = millis();
@@ -99,15 +111,7 @@ void loop() {
   }
 
   if(stepCounter % BUTTON_READ_TIME == 0){
-    currentStartButtonState = digitalRead(startPin);
-    currentControlEditButtonState = digitalRead(controlEditPin);
-    
-    if(currentStartButtonState == 1 && currentControlEditButtonState == 1){
-        if(isRunning == 1)
-          isRunning = 0;
-         else
-          isRunning = 1;
-    }
+    readButtons();
   }
 
   if(stepCounter == BUTTON_READ_TIME * REFRESH_TIME)
